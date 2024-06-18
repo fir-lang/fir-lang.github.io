@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<link rel="icon" href="data:,">
+
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+
+<link rel="stylesheet" href="lib/codemirror.css">
+
+<script src="lib/codemirror.min.js"></script>
+<script src="addon/edit/matchbrackets.js"></script>
+<script src="addon/mode/simple.js"></script>
+
+<style>
+  textarea {
+    width: 100%;
+  }
+
+  .CodeMirror {
+    border: 1px solid black;
+  }
+
+  #wrapper {
+    display: flex;
+  }
+
+  #left {
+    flex: 0 0 40%;
+  }
+
+  #right {
+    flex: 1;
+  }
+</style>
+
+Program:
+
+<div><textarea id="code" name="code"></textarea></div>
+
+<p></p>
+
+Program input: (passed to <code>main</code> as <code>Str</code>)
+
+<div><textarea id="programInput" name="programInput"></textarea></div>
+
+<p></p>
+
+<button onclick="run(editor.getValue(), input.value)">Run</button>
+
+<p></p>
+
+Program output:
+
+<div><textarea readonly id="programOutput" name="programOutput"></textarea></div>
+
+<p></p>
+
+Interpreter output: (errors, crashes etc.)
+
+<div><textarea readonly id="interpreterOutput" name="interpreterOutput"></textarea></div>
+
+<script>
+  CodeMirror.defineSimpleMode("simplemode", {
+    // The start state contains the rules that are initially used
+    start: [
+      {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
+
+      {regex: /(?:elif|else|fn|for|if|in|let|match|return|self|trait|type|var|while)\b/,
+       token: "keyword"},
+
+      {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
+       token: "number"},
+
+      {regex: /--.*/, token: "comment"},
+    ],
+
+    meta: {
+      dontIndentStates: ["comment"],
+      lineComment: "--"
+    }
+  });
+
+  var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    lineNumbers: true,
+    lineWrapping: true,
+    matchBrackets: true,
+    indentUnit: 2,
+    mode: "simplemode",
+  });
+
+  var input = document.getElementById("programInput");
+
+  editor.setSize(null, 800);
+
+  function clearProgramOutput() {
+    var div = document.getElementById('programOutput');
+    div.innerHTML = '';
+  }
+
+  function addProgramOutput(output) {
+    var div = document.getElementById('programOutput');
+    div.innerHTML += output;
+    div.innerHTML += '\n';
+  }
+
+  function clearInterpreterOutput() {
+    var div = document.getElementById('interpreterOutput');
+    div.innerHTML = '';
+  }
+
+  function addInterpreterOutput(output) {
+    var div = document.getElementById('interpreterOutput');
+    div.innerHTML += output;
+    div.innerHTML += '\n';
+  }
+</script>
+
+<script type="module">
+  import init, { run } from './fir.js';
+
+  await init();
+
+  window.run = run;
+
+  // Initially load ArithmeticExpressions.fir as the code.
+  fetch(new Request('ArithmeticExpressions.fir'))
+    .then((response) => response.text())
+    .then((text) => editor.setValue(text));
+</script>
