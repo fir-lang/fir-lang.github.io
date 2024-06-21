@@ -70,6 +70,12 @@ Interpreter output: (errors, crashes etc.)
       {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
        token: "number"},
 
+      {regex: /[a-z][a-zA-Z0-9_]*/,
+       token: "variable"},
+
+      {regex: /[A-Z][a-zA-Z0-9_]*/,
+       token: "type"},
+
       {regex: /--.*/, token: "comment"},
     ],
 
