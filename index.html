@@ -68,7 +68,7 @@ Interpreter output: (errors, crashes etc.)
     start: [
       {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
 
-      {regex: /(?:elif|else|fn|for|if|in|let|match|return|self|trait|type|var|while)\b/,
+      {regex: /(?:elif|else|fn|for|if|in|let|match|return|self|trait|type|var|while|import)\b/,
        token: "keyword"},
 
       {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
@@ -80,12 +80,12 @@ Interpreter output: (errors, crashes etc.)
       {regex: /[A-Z][a-zA-Z0-9_]*/,
        token: "type"},
 
-      {regex: /--.*/, token: "comment"},
+      {regex: /#.*/, token: "comment"},
     ],
 
     meta: {
       dontIndentStates: ["comment"],
-      lineComment: "--"
+      lineComment: "#"
     }
   });
 
@@ -134,15 +134,15 @@ Interpreter output: (errors, crashes etc.)
 </script>
 
 <script type="module">
-  import init, { run } from './fir.js';
+  import init, { run, setupPanicHook } from './fir.js';
 
   await init();
+  await setupPanicHook();
 
   window.run = function(pgm, input) {
     try {
       run(pgm, input);
     } catch (err) {
-      clearInterpreterOutput();
       addInterpreterOutput(err);
       addInterpreterOutput(err.stack);
     }
