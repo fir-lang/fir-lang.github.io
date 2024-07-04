@@ -13,6 +13,10 @@
 <style>
   textarea {
     width: 100%;
+    height: auto;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: scroll;
   }
 
   .CodeMirror {
@@ -40,7 +44,7 @@ Program:
 
 Program input: (passed to <code>main</code> as <code>Str</code>)
 
-<div><textarea id="programInput" name="programInput"></textarea></div>
+<div><textarea id="programInput" name="programInput" rows=10></textarea></div>
 
 <p></p>
 
@@ -97,26 +101,35 @@ Interpreter output: (errors, crashes etc.)
 
   editor.setSize(null, 800);
 
+  function resizeTextArea(textarea) {
+    var numLines = textarea.innerHTML.split('\n').length;
+    textarea.rows = numLines;
+  }
+
   function clearProgramOutput() {
-    var div = document.getElementById('programOutput');
-    div.innerHTML = '';
+    var textarea = document.getElementById('programOutput');
+    textarea.innerHTML = '';
+    resizeTextArea(textarea);
   }
 
   function addProgramOutput(output) {
-    var div = document.getElementById('programOutput');
-    div.innerHTML += output;
-    div.innerHTML += '\n';
+    var textarea = document.getElementById('programOutput');
+    textarea.innerHTML += output;
+    textarea.innerHTML += '\n';
+    resizeTextArea(textarea);
   }
 
   function clearInterpreterOutput() {
-    var div = document.getElementById('interpreterOutput');
-    div.innerHTML = '';
+    var textarea = document.getElementById('interpreterOutput');
+    textarea.innerHTML = '';
+    resizeTextArea(textarea);
   }
 
   function addInterpreterOutput(output) {
-    var div = document.getElementById('interpreterOutput');
-    div.innerHTML += output;
-    div.innerHTML += '\n';
+    var textarea = document.getElementById('interpreterOutput');
+    textarea.innerHTML += output;
+    textarea.innerHTML += '\n';
+    resizeTextArea(textarea);
   }
 </script>
 
@@ -125,7 +138,15 @@ Interpreter output: (errors, crashes etc.)
 
   await init();
 
-  window.run = run;
+  window.run = function(pgm, input) {
+    try {
+      run(pgm, input);
+    } catch (err) {
+      clearInterpreterOutput();
+      addInterpreterOutput(err);
+      addInterpreterOutput(err.stack);
+    }
+  }
 
   // Initially load ArithmeticExpressions.fir as the code.
   fetch(new Request('ArithmeticExpressions.fir'))
