@@ -245,11 +245,11 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_addProgramOutput_404cd6f524df76be = function(arg0, arg1) {
         addProgramOutput(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
-        takeObject(arg0);
-    };
     imports.wbg.__wbg_addInterpreterOutput_09587340ba457166 = function(arg0, arg1) {
         addInterpreterOutput(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
     };
     imports.wbg.__wbg_clearInterpreterOutput_9108264cc981a752 = typeof clearInterpreterOutput == 'function' ? clearInterpreterOutput : notDefined('clearInterpreterOutput');
     imports.wbg.__wbg_clearProgramOutput_13c5e2f170c94852 = typeof clearProgramOutput == 'function' ? clearProgramOutput : notDefined('clearProgramOutput');
