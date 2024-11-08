@@ -68,6 +68,8 @@ Interpreter output: (errors, crashes etc.)
 
 <div><textarea readonly id="interpreterOutput" name="interpreterOutput"></textarea></div>
 
+<p id="version"></p>
+
 <script>
   CodeMirror.defineSimpleMode("simplemode", {
     // The start state contains the rules that are initially used
@@ -140,7 +142,7 @@ Interpreter output: (errors, crashes etc.)
 </script>
 
 <script type="module">
-  import init, { run, setupPanicHook } from './fir.js';
+  import init, { run, setupPanicHook, version } from './fir.js';
 
   await init();
   await setupPanicHook();
@@ -153,6 +155,9 @@ Interpreter output: (errors, crashes etc.)
       addInterpreterOutput(err.stack);
     }
   }
+
+  // Show version info at the end of the page.
+  document.getElementById("version").innerHTML = version();
 
   // Initially load ArithmeticExpressions.fir as the code.
   fetch(new Request('ArithmeticExpressions.fir'))
