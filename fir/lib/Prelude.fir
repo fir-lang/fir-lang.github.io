@@ -1,4 +1,5 @@
 import Char
+import Exn
 import Iter
 import Num
 import Str
@@ -6,110 +7,135 @@ import StrBuf
 import Vec
 
 # The `+` operator.
-trait Add[T]:
-    fn __add(self, other: T): T
+trait Add[t]:
+    __add(self, other: t): t
 
 # The `-` operator.
-trait Sub[T]:
-    fn __sub(self, other: T): T
+trait Sub[t]:
+    __sub(self, other: t): t
 
 # The `*` operator.
-trait Mul[T]:
-    fn __mul(self, other: T): T
+trait Mul[t]:
+    __mul(self, other: t): t
 
 # The `/` operator.
-trait Div[T]:
-    fn __div(self, other: T): T
+trait Div[t]:
+    __div(self, other: t): t
 
 # The `==` operator.
-trait Eq[T]:
-    fn __eq(self, other: T): Bool
+trait Eq[t]:
+    __eq(self, other: t): Bool
 
-    fn __neq(self, other: T): Bool =
+    __neq(self, other: t): Bool
         !self.__eq(other)
 
 # The `|` operator.
-trait BitOr[T]:
-    fn __bitor(self, other: T): T
+trait BitOr[t]:
+    __bitor(self, other: t): t
 
 # The `&` operator.
-trait BitAnd[T]:
-    fn __bitand(self, other: T): T
+trait BitAnd[t]:
+    __bitand(self, other: t): t
 
 # The `<<` operator.
-trait Shl[T]:
-    fn __shl(self, other: T): T
+trait Shl[t]:
+    __shl(self, other: t): t
 
 # The `>>` operator.
-trait Shr[T]:
-    fn __shr(self, other: T): T
+trait Shr[t]:
+    __shr(self, other: t): t
 
-trait Ord[T]:
-    fn cmp(self, other: T): Ordering
+trait Ord[t]:
+    cmp(self, other: t): Ordering
 
-    fn __lt(self, other: T): Bool =
+    __lt(self, other: t): Bool
         match self.cmp(other):
             Ordering.Less: Bool.True
             _: Bool.False
 
-    fn __le(self, other: T): Bool =
+    __le(self, other: t): Bool
         match self.cmp(other):
             Ordering.Less | Ordering.Equal: Bool.True
             _: Bool.False
 
-    fn __gt(self, other: T): Bool =
+    __gt(self, other: t): Bool
         match self.cmp(other):
             Ordering.Greater: Bool.True
             _: Bool.False
 
-    fn __ge(self, other: T): Bool =
+    __ge(self, other: t): Bool
         match self.cmp(other):
             Ordering.Greater | Ordering.Equal: Bool.True
             _: Bool.False
 
-trait ToStr[T]:
-    fn toStr(self): Str
+trait ToStr[t]:
+    toStr(self): Str
 
 # The bottom type, e.g. return type of a function that doesn't return.
 # We may want to rename this later.
 type Void
 
-prim type Array[T]
+prim type Array[t]
 
-impl[T] Array[T]:
-    prim fn new(len: U32): Array[T]
-    prim fn len(self): U32
-    prim fn get(self, idx: U32): T
-    prim fn set(self, idx: U32, elem: T)
+impl Array[t]:
+    prim new(len: U32): Array[t]
+    prim len(self): U32
+    prim get(self, idx: U32): t
+    prim set(self, idx: U32, elem: t)
 
-prim fn printStr(s: Str)
-prim fn panic[T: ToStr](msg: T): Void
+prim printStr(s: Str)
+prim panic[t: ToStr](msg: t): Void
 
-type Option[T]:
+type Option[t]:
     None
-    Some(T)
+    Some(t)
 
-impl[T] Option[T]:
-    fn unwrap(self): T =
+impl[t: ToStr] ToStr for Option[t]:
+    toStr(self): Str
+        match self:
+            Option.None: "Option.None"
+            Option.Some(t): "Option.Some(`t.toStr()`)"
+
+impl Option[t]:
+    unwrap(self): t
         match self:
             Option.None: panic("Unwrapping Option.None")
             Option.Some(value): value
 
-type Result[E, T]:
-    Err(E)
-    Ok(T)
+type Result[e, t]:
+    Err(e)
+    Ok(t)
+
+impl[e: ToStr, t: ToStr] ToStr for Result[e, t]:
+    toStr(self): Str
+        match self:
+            Result.Err(e): "Result.Err(`e.toStr()`)"
+            Result.Ok(t): "Result.Ok(`t.toStr()`)"
+
+impl[e, t] Result[e, t]:
+    mapErr(self, f: Fn(e): e2): Result[e2, t]
+        match self:
+            Result.Ok(a): Result.Ok(a)
+            Result.Err(e): Result.Err(f(e))
 
 type Ordering:
     Less
     Equal
     Greater
 
+impl ToStr for Ordering:
+    toStr(self): Str
+        match self:
+            Ordering.Less: "Ordering.Less"
+            Ordering.Equal: "Ordering.Equal"
+            Ordering.Greater: "Ordering.Greater"
+
 type Bool:
     False
     True
 
 impl ToStr for Bool:
-    fn toStr(self): Str =
+    toStr(self): Str
         match self:
             Bool.True: "Bool.True"
             Bool.False: "Bool.False"

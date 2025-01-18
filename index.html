@@ -123,7 +123,6 @@ Interpreter output: (errors, crashes etc.)
   function addProgramOutput(output) {
     var textarea = document.getElementById('programOutput');
     textarea.innerHTML += output;
-    textarea.innerHTML += '\n';
     resizeTextArea(textarea);
   }
 
@@ -159,8 +158,18 @@ Interpreter output: (errors, crashes etc.)
   // Show version info at the end of the page.
   document.getElementById("version").innerHTML = version();
 
-  // Initially load ArithmeticExpressions.fir as the code.
-  fetch(new Request('ArithmeticExpressions.fir'))
+  const url = new URL(window.location.href);
+
+  var fileToLoad;
+
+  if (url.searchParams.has('errors')) {
+    fileToLoad = 'ErrorHandling.fir'
+  } else {
+    fileToLoad = 'ArithmeticExpressions.fir'
+  }
+
+  fetch(new Request(fileToLoad))
     .then((response) => response.text())
     .then((text) => editor.setValue(text));
+
 </script>
