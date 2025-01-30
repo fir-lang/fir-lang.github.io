@@ -30,6 +30,9 @@ impl Shl for I32:
 impl Shr for I32:
     prim __shr(self, shift: I32): I32
 
+impl Neg for I32:
+    prim __neg(self): I32
+
 impl ToStr for I32:
     prim toStr(self): Str
 
@@ -106,6 +109,9 @@ impl Shl for I8:
 impl Shr for I8:
     prim __shr(self, shift: I8): I8
 
+impl Neg for I8:
+    prim __neg(self): I8
+
 impl ToStr for I8:
     prim toStr(self): Str
 
@@ -156,22 +162,20 @@ impl Step for U8:
 #
 ################################################################################
 
-impl U8:
-    prim asI8(self): I8
-    prim asI32(self): I32
-    prim asU32(self): U32
+prim U8.asI8(self): I8
+prim U8.asI32(self): I32
+prim U8.asU32(self): U32
 
-impl I8:
-    prim asU8(self): U8
-    prim asI32(self): I32
-    prim asU32(self): U32
+prim I8.asU8(self): U8
+prim I8.asI32(self): I32
+prim I8.asU32(self): U32
+prim I8.abs(self): I8
 
-impl U32:
-    prim asI8(self): I8
-    prim asU8(self): U8
-    prim asI32(self): I32
+prim U32.asI8(self): I8
+prim U32.asU8(self): U8
+prim U32.asI32(self): I32
 
-impl I32:
-    prim asI8(self): I8
-    prim asU8(self): U8
-    prim asU32(self): U32
+prim I32.asI8(self): I8
+prim I32.asU8(self): U8
+prim I32.asU32(self): U32
+prim I32.abs(self): I32

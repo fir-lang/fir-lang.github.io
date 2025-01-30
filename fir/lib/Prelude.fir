@@ -14,6 +14,10 @@ trait Add[t]:
 trait Sub[t]:
     __sub(self, other: t): t
 
+# The unary `-` operator.
+trait Neg[t]:
+    __neg(self): t
+
 # The `*` operator.
 trait Mul[t]:
     __mul(self, other: t): t
@@ -77,11 +81,21 @@ type Void
 
 prim type Array[t]
 
-impl Array[t]:
-    prim new(len: U32): Array[t]
-    prim len(self): U32
-    prim get(self, idx: U32): t
-    prim set(self, idx: U32, elem: t)
+prim Array[t].new(len: U32): Array[t]
+prim Array[t].len(self): U32
+prim Array[t].get(self, idx: U32): t
+prim Array[t].set(self, idx: U32, elem: t)
+
+impl[t: ToStr] ToStr for Array[t]:
+    toStr(self): Str
+        let buf = StrBuf.withCapacity(self.len() * 5 + 2)
+        buf.push('[')
+        for i in range(0u32, self.len()):
+            if i != 0:
+                buf.push(',')
+            buf.pushStr(self.get(i).toStr())
+        buf.push(']')
+        buf.toStr()
 
 prim printStr(s: Str)
 prim panic[t: ToStr](msg: t): Void
@@ -96,11 +110,10 @@ impl[t: ToStr] ToStr for Option[t]:
             Option.None: "Option.None"
             Option.Some(t): "Option.Some(`t.toStr()`)"
 
-impl Option[t]:
-    unwrap(self): t
-        match self:
-            Option.None: panic("Unwrapping Option.None")
-            Option.Some(value): value
+Option[t].unwrap(self): t
+    match self:
+        Option.None: panic("Unwrapping Option.None")
+        Option.Some(value): value
 
 type Result[e, t]:
     Err(e)
@@ -112,11 +125,10 @@ impl[e: ToStr, t: ToStr] ToStr for Result[e, t]:
             Result.Err(e): "Result.Err(`e.toStr()`)"
             Result.Ok(t): "Result.Ok(`t.toStr()`)"
 
-impl[e, t] Result[e, t]:
-    mapErr(self, f: Fn(e): e2): Result[e2, t]
-        match self:
-            Result.Ok(a): Result.Ok(a)
-            Result.Err(e): Result.Err(f(e))
+Result[e, t].mapErr(self, f: Fn(e): e2): Result[e2, t]
+    match self:
+        Result.Ok(a): Result.Ok(a)
+        Result.Err(e): Result.Err(f(e))
 
 type Ordering:
     Less
@@ -139,3 +151,5 @@ impl ToStr for Bool:
         match self:
             Bool.True: "Bool.True"
             Bool.False: "Bool.False"
+
+prim readFileUtf8(path: Str): Str
