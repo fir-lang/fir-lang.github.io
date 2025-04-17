@@ -162,8 +162,8 @@ Interpreter output: (errors, crashes etc.)
 
   var fileToLoad;
 
-  if (url.searchParams.has('errors')) {
-    fileToLoad = 'ErrorHandling.fir'
+  if (url.searchParams.has('file')) {
+    fileToLoad = url.searchParams.get('file')
   } else {
     fileToLoad = 'ArithmeticExpressions.fir'
   }
