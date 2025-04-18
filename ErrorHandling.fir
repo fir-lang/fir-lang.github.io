@@ -1,10 +1,14 @@
+# Code for the blog post: https://osa1.net/posts/2025-01-18-fir-error-handling.html
+#
+# TODO: Enable overflow tests after adding operators that allow overflows.
+
 parseU32(s: Str): Result[[InvalidDigit, Overflow, EmptyInput, ..r], U32]
     if s.len() == 0:
         return Result.Err(~EmptyInput)
 
     let result: U32 = 0
 
-    for c in s.chars():
+    for c: Char in s.chars():
         if c < '0' || c > '9':
             return Result.Err(~InvalidDigit)
 
@@ -24,7 +28,7 @@ checkedAdd(i1: U32, i2: U32): Option[U32]
     if i1 > 4294967295u32 - i2:
         return Option.None
 
-    Option.Some(i1 + i2)
+    return Option.Some(i1 + i2)
 
 checkedMul(i1: U32, i2: U32): Option[U32]
     let result = i1 * i2
@@ -32,7 +36,7 @@ checkedMul(i1: U32, i2: U32): Option[U32]
     if i1 != 0 && result / i1 != i2:
         return Option.None
 
-    Option.Some(result)
+    return Option.Some(result)
 
 parseIntErrorToStr(error: [InvalidDigit, Overflow, EmptyInput]): Str
     match error:
@@ -61,7 +65,7 @@ parseU32FromFile(filePath: Str): Result[[InvalidDigit, Overflow, EmptyInput, IoE
 parseWith(vec: Vec[Str], parseFn: Fn(Str): Result[errs, a]): Result[errs, Vec[a]]
     let ret = Vec.withCapacity(vec.len())
 
-    for s in vec.iter():
+    for s: Str in vec.iter():
         match parseFn(s):
             Result.Err(err): return Result.Err(err)
             Result.Ok(val): ret.push(val)
@@ -93,7 +97,7 @@ parseU32Exn(s: Str): [InvalidDigit, Overflow, EmptyInput, ..r] U32
 
     let result: U32 = 0
 
-    for c in s.chars():
+    for c: Char in s.chars():
         if c < '0' || c > '9':
             throw(~InvalidDigit)
 
@@ -134,7 +138,7 @@ main
     printStr(parseU32("123").mapErr(parseIntErrorToStr).toStr())
     printStr(parseU32("12a3").mapErr(parseIntErrorToStr).toStr())
     printStr(parseU32("").mapErr(parseIntErrorToStr).toStr())
-    printStr(parseU32("100000000000000000000000").mapErr(parseIntErrorToStr).toStr())
+    # printStr(parseU32("100000000000000000000000").mapErr(parseIntErrorToStr).toStr())
     printStr("")
 
     printStr("----- parseU32FromFile")
@@ -156,12 +160,32 @@ main
 
     printStr("----- parseWithErrorHandler")
     printStr(parseWithErrorHandler("123", handleSomeErrs).mapErr(parseIntErrorToStr).toStr())
-    printStr(parseWithErrorHandler("10000000000000000000000", handleSomeErrs).mapErr(parseIntErrorToStr).toStr())
+    # printStr(parseWithErrorHandler("10000000000000000000000", handleSomeErrs).mapErr(parseIntErrorToStr).toStr())
     printStr("")
 
     printStr("----- parseU32UsingExnVersion")
     printStr(parseU32UsingExnVersion("123").mapErr(parseIntErrorToStr).toStr())
     printStr(parseU32UsingExnVersion("12a3").mapErr(parseIntErrorToStr).toStr())
     printStr(parseU32UsingExnVersion("").mapErr(parseIntErrorToStr).toStr())
-    printStr(parseU32UsingExnVersion("100000000000000000000000").mapErr(parseIntErrorToStr).toStr())
+    # printStr(parseU32UsingExnVersion("100000000000000000000000").mapErr(parseIntErrorToStr).toStr())
 
+# expected stdout:
+# ----- parseU32
+# Result.Ok(123)
+# Result.Err(invalid digit)
+# Result.Err(empty input)
+# 
+# ----- parseU32FromFile
+# io error
+# 
+# ----- parseWith
+# Result.Ok([1,2,3])
+# Result.Err(invalid digit)
+# 
+# ----- parseWithErrorHandler
+# Result.Ok(123)
+# 
+# ----- parseU32UsingExnVersion
+# Result.Ok(123)
+# Result.Err(invalid digit)
+# Result.Err(empty input)
