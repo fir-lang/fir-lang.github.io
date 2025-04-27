@@ -48,13 +48,13 @@ Vec.pop(self: Vec[t]): Option[t]
 
 Vec.set(self: Vec[t], idx: U32, elem: t)
     if idx >= self._len:
-        panic("Vec.set OOB (len=`self._len.toStr()`, idx=`idx.toStr()`)")
+        panic("Vec.set OOB (len=`self._len`, idx=`idx`)")
 
     self._data.set(idx, elem)
 
 Vec.get(self: Vec[t], idx: U32): t
     if idx >= self._len:
-        panic("Vec.get OOB (len=`self._len.toStr()`, idx=`idx.toStr()`)")
+        panic("Vec.get OOB (len=`self._len`, idx=`idx`)")
 
     self._data.get(idx)
 
@@ -69,13 +69,24 @@ Vec.iter(self: Vec[t]): VecIter[t]
         _idx = 0,
     )
 
+Vec.first(self: Vec[t]): Option[t]
+    if self.len() == 0:
+        return Option.None
+    Option.Some(self._data.get(0))
+
+Vec.last(self: Vec[t]): Option[t]
+    let len = self.len()
+    if len == 0:
+        return Option.None
+    Option.Some(self._data.get(len - 1))
+
 Vec.sort[Ord[t]](self: Vec[t])
     if self.len() != 0:
         _quicksort(self, 0, self.len() - 1)
 
 _quicksort[Ord[t]](vec: Vec[t], low: U32, high: U32)
     if low >= high:
-        return ()   # TODO: Allow returning without a value
+        return
 
     let p = _partition(vec, low, high)
 

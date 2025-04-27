@@ -62,7 +62,7 @@ parseU32FromFile(filePath: Str): Result[[InvalidDigit, Overflow, EmptyInput, IoE
 
     parseU32(fileContents)
 
-parseWith(vec: Vec[Str], parseFn: Fn(Str): Result[errs, a]): Result[errs, Vec[a]]
+parseWith(vec: Vec[Str], parseFn: Fn(Str): exn Result[errs, a]): exn Result[errs, Vec[a]]
     let ret = Vec.withCapacity(vec.len())
 
     for s: Str in vec.iter():
@@ -72,7 +72,7 @@ parseWith(vec: Vec[Str], parseFn: Fn(Str): Result[errs, a]): Result[errs, Vec[a]
 
     Result.Ok(ret)
 
-parseWith2(vec: Vec[Str], parseFn: Fn(Str): Result[[OtherError, ..r], a]): Result[[..r], Vec[a]]
+parseWith2(vec: Vec[Str], parseFn: Fn(Str): exn Result[[OtherError, ..r], a]): exn Result[[..r], Vec[a]]
     let ret = Vec.withCapacity(vec.len())
 
     for s in vec.iter():
@@ -85,7 +85,7 @@ parseWith2(vec: Vec[Str], parseFn: Fn(Str): Result[[OtherError, ..r], a]): Resul
 
 handleSomeErrs(error: [Overflow, OtherError]): U32 = 0
 
-parseWithErrorHandler(input: Str, handler: Fn([Overflow, ..r1]): U32): Result[[InvalidDigit, EmptyInput, ..r2], U32]
+parseWithErrorHandler(input: Str, handler: Fn([Overflow, ..r1]): exn U32): exn Result[[InvalidDigit, EmptyInput, ..r2], U32]
     match parseU32(input):
         Result.Err(~Overflow): Result.Ok(handler(~Overflow))
         Result.Err(other): Result.Err(other)
@@ -134,40 +134,40 @@ parseU32UsingResultVersion(s: Str): [InvalidDigit, Overflow, EmptyInput, ..r] U3
     untry(parseU32(s))
 
 main
-    printStr("----- parseU32")
-    printStr(parseU32("123").mapErr(parseIntErrorToStr).toStr())
-    printStr(parseU32("12a3").mapErr(parseIntErrorToStr).toStr())
-    printStr(parseU32("").mapErr(parseIntErrorToStr).toStr())
-    # printStr(parseU32("100000000000000000000000").mapErr(parseIntErrorToStr).toStr())
-    printStr("")
+    print("----- parseU32")
+    print(parseU32("123").mapErr(parseIntErrorToStr))
+    print(parseU32("12a3").mapErr(parseIntErrorToStr))
+    print(parseU32("").mapErr(parseIntErrorToStr))
+    # print(parseU32("100000000000000000000000").mapErr(parseIntErrorToStr))
+    print("")
 
-    printStr("----- parseU32FromFile")
+    print("----- parseU32FromFile")
     match parseU32FromFile("test"):
-        Result.Err(~IoError): printStr("io error")
-        Result.Err(other): printStr(parseIntErrorToStr(other))
-        Result.Ok(val): printStr(val.toStr())
-    printStr("")
+        Result.Err(~IoError): print("io error")
+        Result.Err(other): print(parseIntErrorToStr(other))
+        Result.Ok(val): print(val)
+    print("")
 
-    printStr("----- parseWith")
+    print("----- parseWith")
     let vec: Vec[Str] = Vec.withCapacity(3)
     vec.push("1")
     vec.push("2")
     vec.push("3")
-    printStr(parseWith(vec, parseU32).mapErr(parseIntErrorToStr).toStr())
+    print(parseWith(vec, parseU32).mapErr(parseIntErrorToStr))
     vec.push("blah")
-    printStr(parseWith(vec, parseU32).mapErr(parseIntErrorToStr).toStr())
-    printStr("")
+    print(parseWith(vec, parseU32).mapErr(parseIntErrorToStr))
+    print("")
 
-    printStr("----- parseWithErrorHandler")
-    printStr(parseWithErrorHandler("123", handleSomeErrs).mapErr(parseIntErrorToStr).toStr())
-    # printStr(parseWithErrorHandler("10000000000000000000000", handleSomeErrs).mapErr(parseIntErrorToStr).toStr())
-    printStr("")
+    print("----- parseWithErrorHandler")
+    print(parseWithErrorHandler("123", handleSomeErrs).mapErr(parseIntErrorToStr))
+    # print(parseWithErrorHandler("10000000000000000000000", handleSomeErrs).mapErr(parseIntErrorToStr))
+    print("")
 
-    printStr("----- parseU32UsingExnVersion")
-    printStr(parseU32UsingExnVersion("123").mapErr(parseIntErrorToStr).toStr())
-    printStr(parseU32UsingExnVersion("12a3").mapErr(parseIntErrorToStr).toStr())
-    printStr(parseU32UsingExnVersion("").mapErr(parseIntErrorToStr).toStr())
-    # printStr(parseU32UsingExnVersion("100000000000000000000000").mapErr(parseIntErrorToStr).toStr())
+    print("----- parseU32UsingExnVersion")
+    print(parseU32UsingExnVersion("123").mapErr(parseIntErrorToStr))
+    print(parseU32UsingExnVersion("12a3").mapErr(parseIntErrorToStr))
+    print(parseU32UsingExnVersion("").mapErr(parseIntErrorToStr))
+    # print(parseU32UsingExnVersion("100000000000000000000000").mapErr(parseIntErrorToStr))
 
 # expected stdout:
 # ----- parseU32
