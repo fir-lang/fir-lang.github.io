@@ -1,8 +1,204 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fir interpreter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      height: 100vh;
+    }
 
-<link rel="icon" href="data:,">
+    main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
 
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+    #examples {
+      width: 200px;
+      background: #f0f0f0;
+      padding: 1em;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+    }
+
+    #examples h2 {
+      font-size: 1em;
+      margin-top: 0;
+    }
+
+    .example {
+      cursor: pointer;
+      padding: 0.3em 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .example:hover {
+      background: #ddd;
+    }
+
+    .description {
+      font-size: 0.8em;
+      color: #555;
+      margin-bottom: 0.5em;
+    }
+
+    #editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1em;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      font-family: monospace;
+      font-size: 1em;
+      padding: 1em;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    #run-button {
+      margin-top: 0.5em;
+      padding: 0.5em 1em;
+      font-size: 1em;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    #outputs {
+      display: flex;
+      gap: 1em;
+      margin-top: 1em;
+    }
+
+    .output-box {
+      flex: 1;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      font-family: monospace;
+      height: 150px;
+      overflow-y: auto;
+    }
+
+    .output-box h3 {
+      margin: 0 0 0.5em 0;
+      font-size: 0.9em;
+      color: #333;
+    }
+
+    footer {
+      padding: 0.5em 1em;
+      background: #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85em;
+      color: #555;
+      border-top: 1px solid #ccc;
+    }
+
+    .footer-links a {
+      margin-left: 1em;
+      text-decoration: none;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+<main>
+  <div id="examples">
+    <h2>Examples</h2>
+  </div>
+
+  <div id="editor">
+    <textarea id="code" placeholder="Write your program here..."></textarea>
+    <button id="run-button">Run</button>
+    <div id="outputs">
+      <div class="output-box">
+        <h3>Interpreter output</h3>
+        <div><pre id="interpreter-output"></pre></div>
+      </div>
+      <div class="output-box">
+        <h3>Program output</h3>
+        <div><pre id="program-output"></pre></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div id="version"></div>
+  <div class="footer-links">
+    <a href="https://github.com/fir-lang/fir" target="_blank">Interpreter source</a>
+    <a href="https://github.com/fir-lang/fir-lang.github.io" target="_blank">Website source</a>
+  </div>
+</footer>
+
+<script>
+  const examplesContainer = document.getElementById('examples');
+  const interpreterOutput = document.getElementById('interpreter-output');
+  const programOutput = document.getElementById('program-output');
+  const runButton = document.getElementById('run-button');
+
+  const examples = [
+    {
+      title: "ErrorHandling.fir",
+      description: "Basic error handling example",
+      url: "ErrorHandling.fir"
+    },
+    {
+      title: "ThrowingIter.fir",
+      description: "Demonstrates throwing iterators",
+      url: "ThrowingIter.fir"
+    },
+    {
+      title: "PPrintExample.fir",
+      description: "Pretty printing combinators",
+      url: "PPrintExample.fir"
+    }
+  ];
+
+  examples.forEach(example => {
+    const div = document.createElement('div');
+    div.className = 'example';
+    div.innerHTML = `
+      ${example.title}
+      <div class="description">${example.description}</div>
+    `;
+
+    div.addEventListener('click', () => {
+      fetch(example.url)
+        .then(res => res.text())
+        .then(code => {
+          editor.setValue(code);
+          interpreterOutput.textContent = '';
+          programOutput.textContent = '';
+        })
+        .catch(err => {
+          editor.setValue('');
+          interpreterOutput.textContent = 'Error loading example.';
+          programOutput.textContent = '';
+          console.error(err);
+        });
+    });
+
+    examplesContainer.appendChild(div);
+  });
+
+  runButton.addEventListener('click', () => {
+    run(editor.getValue(), "");
+  });
+</script>
 
 <link rel="stylesheet" href="lib/codemirror.css">
 
@@ -10,134 +206,72 @@
 <script src="addon/edit/matchbrackets.js"></script>
 <script src="addon/mode/simple.js"></script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
-
-<style>
-  textarea {
-    width: 100%;
-    height: auto;
-    white-space: pre;
-    overflow-wrap: normal;
-    overflow-x: scroll;
-    font-family: "JetBrains Mono", monospace;
-  }
-
-  .CodeMirror {
-    border: 1px solid black;
-    font-family: "JetBrains Mono", monospace;
-  }
-
-  #wrapper {
-    display: flex;
-  }
-
-  #left {
-    flex: 0 0 40%;
-  }
-
-  #right {
-    flex: 1;
-  }
-</style>
-
-Program:
-
-<div><textarea id="code" name="code"></textarea></div>
-
-<p></p>
-
-Program input: (passed to <code>main</code> as <code>Str</code>)
-
-<div><textarea id="programInput" name="programInput" rows=10></textarea></div>
-
-<p></p>
-
-<button onclick="run(editor.getValue(), input.value)">Run</button>
-
-<p></p>
-
-Program output:
-
-<div><textarea readonly id="programOutput" name="programOutput"></textarea></div>
-
-<p></p>
-
-Interpreter output: (errors, crashes etc.)
-
-<div><textarea readonly id="interpreterOutput" name="interpreterOutput"></textarea></div>
-
-<p id="version"></p>
-
 <script>
-  CodeMirror.defineSimpleMode("simplemode", {
-    // The start state contains the rules that are initially used
-    start: [
-      {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
+CodeMirror.defineSimpleMode("simplemode", {
+  // The start state contains the rules that are initially used
+  start: [
+    {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
 
-      {regex: /(?:elif|else|fn|for|if|in|let|match|return|self|trait|type|var|while|import)\b/,
-       token: "keyword"},
+    {regex: /(?:elif|else|fn|for|if|in|let|match|return|self|trait|type|var|while|import)\b/,
+     token: "keyword"},
 
-      {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
-       token: "number"},
+    {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
+     token: "number"},
 
-      {regex: /[a-z][a-zA-Z0-9_]*/,
-       token: "variable"},
+    {regex: /[a-z][a-zA-Z0-9_]*/,
+     token: "variable"},
 
-      {regex: /[A-Z][a-zA-Z0-9_]*/,
-       token: "type"},
+    {regex: /[A-Z][a-zA-Z0-9_]*/,
+     token: "type"},
 
-      {regex: /#.*/, token: "comment"},
-    ],
+    {regex: /#.*/, token: "comment"},
+  ],
 
-    meta: {
-      dontIndentStates: ["comment"],
-      lineComment: "#"
-    }
-  });
-
-  var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-    lineNumbers: true,
-    lineWrapping: true,
-    matchBrackets: true,
-    indentUnit: 2,
-    mode: "simplemode",
-  });
-
-  var input = document.getElementById("programInput");
-
-  editor.setSize(null, 800);
-
-  function resizeTextArea(textarea) {
-    var numLines = textarea.innerHTML.split('\n').length;
-    textarea.rows = numLines;
+  meta: {
+    dontIndentStates: ["comment"],
+    lineComment: "#"
   }
+});
 
-  function clearProgramOutput() {
-    var textarea = document.getElementById('programOutput');
-    textarea.innerHTML = '';
-    resizeTextArea(textarea);
-  }
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+  lineNumbers: true,
+  lineWrapping: true,
+  matchBrackets: true,
+  indentUnit: 4,
+  mode: "simplemode",
+});
 
-  function addProgramOutput(output) {
-    var textarea = document.getElementById('programOutput');
-    textarea.innerHTML += output;
-    resizeTextArea(textarea);
-  }
+editor.setSize(null, 800);
 
-  function clearInterpreterOutput() {
-    var textarea = document.getElementById('interpreterOutput');
-    textarea.innerHTML = '';
-    resizeTextArea(textarea);
-  }
+function resizeTextArea(textarea) {
+  var numLines = textarea.innerHTML.split('\n').length;
+  textarea.rows = numLines;
+}
 
-  function addInterpreterOutput(output) {
-    var textarea = document.getElementById('interpreterOutput');
-    textarea.innerHTML += output;
-    textarea.innerHTML += '\n';
-    resizeTextArea(textarea);
-  }
+function clearProgramOutput() {
+  var textarea = document.getElementById('program-output');
+  textarea.innerHTML = '';
+  resizeTextArea(textarea);
+}
+
+function addProgramOutput(output) {
+  var textarea = document.getElementById('program-output');
+  textarea.innerHTML += output;
+  resizeTextArea(textarea);
+}
+
+function clearInterpreterOutput() {
+  var textarea = document.getElementById('interpreter-output');
+  textarea.innerHTML = '';
+  resizeTextArea(textarea);
+}
+
+function addInterpreterOutput(output) {
+  var textarea = document.getElementById('interpreter-output');
+  textarea.innerHTML += output;
+  textarea.innerHTML += '\n';
+  resizeTextArea(textarea);
+}
 </script>
 
 <script type="module">
@@ -165,11 +299,13 @@ Interpreter output: (errors, crashes etc.)
   if (url.searchParams.has('file')) {
     fileToLoad = url.searchParams.get('file')
   } else {
-    fileToLoad = 'ArithmeticExpressions.fir'
+    fileToLoad = 'ErrorHandling.fir'
   }
 
   fetch(new Request(fileToLoad))
     .then((response) => response.text())
     .then((text) => editor.setValue(text));
-
 </script>
+
+</body>
+</html>
