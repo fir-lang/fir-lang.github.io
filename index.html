@@ -4,11 +4,15 @@
   <meta charset="UTF-8">
   <title>Fir interpreter</title>
   <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
     body {
       font-family: sans-serif;
       display: flex;
       flex-direction: column;
-      margin: 0;
       height: 100vh;
     }
 
@@ -53,6 +57,7 @@
       flex-direction: column;
       padding: 1em;
       box-sizing: border-box;
+      height: 100%;
     }
 
     textarea {
@@ -75,8 +80,10 @@
 
     #outputs {
       display: flex;
+      flex-direction: column;
       gap: 1em;
       margin-top: 1em;
+      flex: 1;
     }
 
     .output-box {
@@ -85,7 +92,6 @@
       border: 1px solid #ccc;
       padding: 0.5em;
       font-family: monospace;
-      height: 150px;
       overflow-y: auto;
     }
 
@@ -93,6 +99,10 @@
       margin: 0 0 0.5em 0;
       font-size: 0.9em;
       color: #333;
+    }
+
+    .hidden {
+      display: none;
     }
 
     footer {
@@ -124,11 +134,11 @@
     <textarea id="code" placeholder="Write your program here..."></textarea>
     <button id="run-button">Run</button>
     <div id="outputs">
-      <div class="output-box">
+      <div class="output-box hidden" id="interpreter-output-box">
         <h3>Interpreter output</h3>
         <div><pre id="interpreter-output"></pre></div>
       </div>
-      <div class="output-box">
+      <div class="output-box hidden" id="program-output-box">
         <h3>Program output</h3>
         <div><pre id="program-output"></pre></div>
       </div>
@@ -147,7 +157,9 @@
 <script>
   const examplesContainer = document.getElementById('examples');
   const interpreterOutput = document.getElementById('interpreter-output');
+  const interpreterOutputBox = document.getElementById('interpreter-output-box');
   const programOutput = document.getElementById('program-output');
+  const programOutputBox = document.getElementById('program-output-box');
   const runButton = document.getElementById('run-button');
 
   const examples = [
@@ -181,13 +193,13 @@
         .then(res => res.text())
         .then(code => {
           editor.setValue(code);
-          interpreterOutput.textContent = '';
-          programOutput.textContent = '';
+          clearInterpreterOutput();
+          clearProgramOutput();
         })
         .catch(err => {
           editor.setValue('');
-          interpreterOutput.textContent = 'Error loading example.';
-          programOutput.textContent = '';
+          addInterpreterOutput('Error loading example.');
+          clearProgramOutput();
           console.error(err);
         });
     });
@@ -243,34 +255,30 @@ var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 
 editor.setSize(null, 800);
 
-function resizeTextArea(textarea) {
-  var numLines = textarea.innerHTML.split('\n').length;
-  textarea.rows = numLines;
-}
-
 function clearProgramOutput() {
-  var textarea = document.getElementById('program-output');
-  textarea.innerHTML = '';
-  resizeTextArea(textarea);
+  programOutput.textContent = '';
+  programOutputBox.classList.add('hidden');
 }
 
 function addProgramOutput(output) {
-  var textarea = document.getElementById('program-output');
-  textarea.innerHTML += output;
-  resizeTextArea(textarea);
+  programOutput.textContent += output;
+  programOutput.scrollTop = programOutput.scrollHeight;
+  if (programOutput.textContent !== '') {
+    programOutputBox.classList.remove('hidden');
+  }
 }
 
 function clearInterpreterOutput() {
-  var textarea = document.getElementById('interpreter-output');
-  textarea.innerHTML = '';
-  resizeTextArea(textarea);
+  interpreterOutput.textContent = '';
+  interpreterOutputBox.classList.add('hidden');
 }
 
 function addInterpreterOutput(output) {
-  var textarea = document.getElementById('interpreter-output');
-  textarea.innerHTML += output;
-  textarea.innerHTML += '\n';
-  resizeTextArea(textarea);
+  interpreterOutput.textContent += output + '\n';
+  interpreterOutput.scrollTop = interpreterOutput.scrollHeight;
+  if (interpreterOutput.textContent !== '') {
+    interpreterOutputBox.classList.remove('hidden');
+  }
 }
 </script>
 
