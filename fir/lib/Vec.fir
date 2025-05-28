@@ -5,6 +5,13 @@ type Vec[t]:
 Vec.withCapacity(cap: U32): Vec[t]
     Vec(_data = Array.new(cap), _len = 0)
 
+Vec.fromIter[Iterator[iter, item, exn]](iter: iter): exn Vec[item]
+    let size = iter.size[iter, item, exn, exn]().unwrapOr(10)
+    let vec = Vec.withCapacity(size)
+    for item: item in iter:
+        vec.push(item)
+    vec
+
 Vec.reserve(self: Vec[t], cap: U32)
     let len = self._len
     let newCap = self._data.len()
@@ -27,11 +34,15 @@ Vec.clear(self: Vec[t])
     # In the compiled version we should actually clear the elements to allow garbage collection.
     self._len = 0
 
+Vec.truncate(self: Vec[t], len: U32)
+    if len < self._len:
+        self._len = len
+
 Vec.push(self: Vec[t], elem: t)
     let cap = self._data.len()
 
     if self._len == cap:
-        let newData = Array.new(cap * 2)
+        let newData = Array.new((cap * 2) | 3)
         for i: U32 in range(0u32, cap):
             newData.set(i, self._data.get(i))
         self._data = newData
