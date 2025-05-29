@@ -112,7 +112,7 @@ _countChars(s: Str): U32
         i += 1
     i
 
-Doc.empty: Doc = Doc._Empty
+Doc.empty(): Doc = Doc._Empty
 
 Doc.str(str: Str): Doc = Doc._Str(str, lenChars = _countChars(str))
 
@@ -122,9 +122,9 @@ Doc.char(c: Char): Doc
     buf.push(c)
     Doc.str(buf.toStr())
 
-Doc.space: Doc = Doc._Str(str = " ", lenChars = 1)
+Doc.space(): Doc = Doc._Str(str = " ", lenChars = 1)
 
-Doc.hardLine: Doc = Doc._HardLine
+Doc.hardLine(): Doc = Doc._HardLine
 
 Doc.blank(spaces: U32): Doc = Doc._Blank(spaces)
 
@@ -144,6 +144,9 @@ Doc.break_(i: U32): Doc
 
 Doc.nest(self, indent: U32): Doc
     Doc._Nest(req = self._req(), indent, doc = self)
+
+Doc.nested(indent: U32, doc: Doc): Doc
+    doc.nest(indent)
 
 Doc.group(self): Doc
     let req = self._req()
