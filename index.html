@@ -253,6 +253,13 @@ var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   mode: "simplemode",
 });
 
+editor.setOption("extraKeys", {
+  Tab: function(cm) {
+    var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+    cm.replaceSelection(spaces);
+  }
+});
+
 editor.setSize(null, 800);
 
 function clearProgramOutput() {
