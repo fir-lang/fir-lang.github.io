@@ -189,17 +189,16 @@
     `;
 
     div.addEventListener('click', () => {
+      clearInterpreterOutput();
+      clearProgramOutput();
       fetch(example.url)
         .then(res => res.text())
         .then(code => {
           editor.setValue(code);
-          clearInterpreterOutput();
-          clearProgramOutput();
         })
         .catch(err => {
           editor.setValue('');
           addInterpreterOutput('Error loading example.');
-          clearProgramOutput();
           console.error(err);
         });
     });
@@ -208,6 +207,8 @@
   });
 
   runButton.addEventListener('click', () => {
+    clearInterpreterOutput();
+    clearProgramOutput();
     run(editor.getValue(), "");
   });
 </script>
@@ -286,6 +287,14 @@ function addInterpreterOutput(output) {
   if (interpreterOutput.textContent !== '') {
     interpreterOutputBox.classList.remove('hidden');
   }
+}
+
+// This functions is used by the interpreted programs and the interpreter.
+function readFileUtf8(path) {
+  const request = new XMLHttpRequest();
+  request.open("GET", path, false);
+  request.send(null);
+  return request.responseText;
 }
 </script>
 
