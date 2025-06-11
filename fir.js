@@ -205,15 +205,15 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
+    imports.wbg.__wbg_addProgramOutput_404cd6f524df76be = function(arg0, arg1) {
+        addProgramOutput(getStringFromWasm0(arg0, arg1));
+    };
     imports.wbg.__wbg_readFileUtf8_e2e836d27afe1fef = function(arg0, arg1, arg2) {
         const ret = readFileUtf8(getStringFromWasm0(arg1, arg2));
         const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         getInt32Memory0()[arg0 / 4 + 1] = len1;
         getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-    };
-    imports.wbg.__wbg_addProgramOutput_404cd6f524df76be = function(arg0, arg1) {
-        addProgramOutput(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_addInterpreterOutput_09587340ba457166 = function(arg0, arg1) {
         addInterpreterOutput(getStringFromWasm0(arg0, arg1));
