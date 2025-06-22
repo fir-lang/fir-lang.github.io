@@ -40,7 +40,7 @@ parseU32(s: Str) Result[[InvalidDigit, Overflow, EmptyInput, ..r], U32]:
     Result.Ok(result)
 
 checkedAdd(i1: U32, i2: U32) Option[U32]:
-    if i1 > 4294967295u32 - i2:
+    if i1 > u32(4294967295) - i2:
         return Option.None
 
     Option.Some(i1 + i2)
@@ -61,7 +61,7 @@ parseIntErrorToStr(error: [InvalidDigit, Overflow, EmptyInput]) Str:
 
 defaultEmptyInput(res: Result[[EmptyInput, ..r], U32]) Result[[..r], U32]:
     match res:
-        Result.Err(~EmptyInput.EmptyInput): Result.Ok(0u32)
+        Result.Err(~EmptyInput.EmptyInput): Result.Ok(u32(0))
         Result.Err(other): Result.Err(other)
         Result.Ok(val): Result.Ok(val)
 
@@ -143,7 +143,7 @@ parseWithExn(vec: Vec[Str], parseFn: Fn(Str) a / exn) Vec[a] / exn:
     ret
 
 parseU32UsingExnVersion(s: Str) Result[[InvalidDigit, Overflow, EmptyInput, ..r], U32]:
-    try({ parseU32Exn(s) })
+    try(||: parseU32Exn(s))
 
 parseU32UsingResultVersion(s: Str) U32 / [InvalidDigit, Overflow, EmptyInput, ..r]:
     untry(parseU32(s))
