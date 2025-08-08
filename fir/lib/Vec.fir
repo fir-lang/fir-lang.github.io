@@ -1,6 +1,7 @@
-type Vec[t]:
-    _data: Array[t]
-    _len: U32
+type Vec[t](
+    _data: Array[t],
+    _len: U32,
+)
 
 Vec.empty() Vec[t]:
     Vec(_data = Array.new(0), _len = 0)
@@ -55,6 +56,31 @@ Vec.push(self: Vec[t], elem: t):
 
     self._data.set(self._len, elem)
     self._len += 1
+
+Vec.insert(self: Vec[t], idx: U32, elem: t):
+    if idx == self.len():
+        self.push(elem)
+        return
+
+    self.reserve(1)
+    self._data.copyWithin(idx, idx + 1, self.len() - idx)
+    self._data.set(idx, elem)
+    self._len += 1
+
+Vec.remove(self: Vec[t], idx: U32) t:
+    let len = self.len()
+
+    if idx >= len:
+        panic("Vec.remove OOB (len=`self._len`, idx=`idx`)")
+
+    if idx + 1 == len:
+        self._len -= 1
+        return self._data.get(self._len)
+
+    let elem = self._data.get(idx)
+    self._data.copyWithin(idx + 1, idx, len - idx - 1)
+    self._len -= 1
+    elem
 
 Vec.pop(self: Vec[t]) Option[t]:
     if self._len == 0:
@@ -141,9 +167,10 @@ impl[ToStr[t]] ToStr[Vec[t]]:
         buf.push(']')
         buf.toStr()
 
-type VecIter[t]:
-    _vec: Vec[t]
-    _idx: U32
+type VecIter[t](
+    _vec: Vec[t],
+    _idx: U32,
+)
 
 impl Iterator[VecIter[t], t, exn]:
     next(self: VecIter[t]) Option[t] / exn:
