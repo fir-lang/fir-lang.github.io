@@ -10,7 +10,9 @@ type Doc:
         lenChars: U32,
     )
 
-    _Blank(spaces: U32)
+    _Blank(
+        spaces: U32,
+    )
 
     _IfFlat(
         flat: Doc,
@@ -31,16 +33,29 @@ type Doc:
         doc: Doc,
     )
 
+    _Align(
+        req: _SpaceReq,
+        doc: Doc,
+    )
+
     _Group(
         req: _SpaceReq,
         doc: Doc,
     )
 
+
 type _State(
     width: U32,
     column: U32,
     output: StrBuf,
+
+    ## Whether to generate indentation before emitting a character.
+    ##
+    ## We don't want to generate indentation right after a line break to avoid generating empty
+    ## lines with just spaces.
+    indentTo: Option[U32],
 )
+
 
 Doc.render(self, width: U32) Str:
     # TODO: For now copying the initial buffer size from the original PPrint, but we should be able
@@ -49,19 +64,33 @@ Doc.render(self, width: U32) Str:
     self.renderToBuf(width, output)
     output.toStr()
 
+
 Doc.renderToBuf(self, width: U32, buf: StrBuf):
-    let state = _State(width, column = 0, output = buf)
+    let state = _State(width, column = 0, output = buf, indentTo = Option.None)
     self._render(state, 0, Bool.False)
+
 
 Doc._render(self, state: _State, indent: U32, flatten: Bool):
     match self:
         Doc._Empty: ()
 
         Doc._Str(str, lenChars):
+            if state.indentTo is Option.Some(indent):
+                for _: U32 in range(u32(0), indent):
+                    state.output.push(' ')
+                state.indentTo = Option.None
+                state.column = indent
+
             state.output.pushStr(str)
             state.column += lenChars
 
         Doc._Blank(spaces):
+            if state.indentTo is Option.Some(indent):
+                for _: U32 in range(u32(0), indent):
+                    state.output.push(' ')
+                state.indentTo = Option.None
+                state.column = indent
+
             for _: U32 in range(u32(0), spaces):
                 state.output.push(' ')
             state.column += spaces
@@ -70,8 +99,7 @@ Doc._render(self, state: _State, indent: U32, flatten: Bool):
             if flatten:
                 panic("")
             state.output.push('\n')
-            for _: U32 in range(u32(0), indent):
-                state.output.push(' ')
+            state.indentTo = Option.Some(indent)
             state.column = indent
 
         Doc._IfFlat(flat, notFlat):
@@ -87,6 +115,8 @@ Doc._render(self, state: _State, indent: U32, flatten: Bool):
         Doc._Nest(req, indent = extraIndent, doc):
             doc._render(state, indent + extraIndent, flatten)
 
+        Doc._Align(req, doc): doc._render(state, state.column, flatten)
+
         Doc._Group(req, doc):
             if not flatten:
                 flatten = match req:
@@ -94,10 +124,12 @@ Doc._render(self, state: _State, indent: U32, flatten: Bool):
                     _SpaceReq.Exact(req): state.column + req <= state.width
             doc._render(state, indent, flatten)
 
+
 # Space requirement.
 type _SpaceReq:
     Exact(U32)
     Infinite
+
 
 impl ToStr[_SpaceReq]:
     toStr(self: _SpaceReq) Str:
@@ -105,11 +137,13 @@ impl ToStr[_SpaceReq]:
             _SpaceReq.Exact(req): "_SpaceReq.Exact(`req`)"
             _SpaceReq.Infinite: "_SpaceReq.Infinite"
 
+
 impl Add[_SpaceReq]:
     __add(self: _SpaceReq, other: _SpaceReq) _SpaceReq:
         if self is _SpaceReq.Exact(req1) and other is _SpaceReq.Exact(req2):
             return _SpaceReq.Exact(req1 + req2)
         _SpaceReq.Infinite
+
 
 Doc._req(self) _SpaceReq:
     match self:
@@ -118,7 +152,11 @@ Doc._req(self) _SpaceReq:
         Doc._Blank(spaces): _SpaceReq.Exact(spaces)
         Doc._IfFlat(flat, ..): flat._req()
         Doc._HardLine: _SpaceReq.Infinite
-        Doc._Cat(req, ..) | Doc._Nest(req, ..) | Doc._Group(req, ..): req
+        Doc._Cat(req, ..)
+            | Doc._Nest(req, ..)
+            | Doc._Group(req, ..)
+            | Doc._Align(req, ..): req
+
 
 _countChars(s: Str) U32:
     let i = u32(0)
@@ -126,9 +164,14 @@ _countChars(s: Str) U32:
         i += 1
     i
 
-Doc.empty() Doc: Doc._Empty
 
-Doc.str(str: Str) Doc: Doc._Str(str, lenChars = _countChars(str))
+Doc.empty() Doc:
+    Doc._Empty
+
+
+Doc.str(str: Str) Doc:
+    Doc._Str(str, lenChars = _countChars(str))
+
 
 Doc.char(c: Char) Doc:
     # TODO: Implement a shorthand char to string
@@ -136,31 +179,40 @@ Doc.char(c: Char) Doc:
     buf.push(c)
     Doc.str(buf.toStr())
 
-Doc.space() Doc: Doc._Str(str = " ", lenChars = 1)
 
-Doc.hardLine() Doc: Doc._HardLine
+Doc.hardLine() Doc:
+    Doc._HardLine
 
-Doc.blank(spaces: U32) Doc: Doc._Blank(spaces)
+
+Doc.blank(spaces: U32) Doc:
+    Doc._Blank(spaces)
+
 
 Doc.ifFlat(doc1: Doc, doc2: Doc) Doc:
     match doc1:
         Doc._IfFlat(flat = doc1, ..) | doc1:
             Doc._IfFlat(flat = doc1, notFlat = doc2)
 
+
 Doc.whenFlat(doc: Doc) Doc:
     Doc.ifFlat(doc, Doc.empty())
+
 
 Doc.whenNotFlat(doc: Doc) Doc:
     Doc.ifFlat(Doc.empty(), doc)
 
+
 Doc.break_(i: U32) Doc:
     Doc.ifFlat(Doc.blank(i), Doc.hardLine())
+
 
 Doc.nest(self, indent: U32) Doc:
     Doc._Nest(req = self._req(), indent, doc = self)
 
+
 Doc.nested(indent: U32, doc: Doc) Doc:
     doc.nest(indent)
+
 
 Doc.group(self) Doc:
     let req = self._req()
@@ -169,8 +221,10 @@ Doc.group(self) Doc:
     else:
         Doc._Group(req, doc = self)
 
+
 Doc.grouped(doc: Doc) Doc:
     doc.group()
+
 
 Doc.cat(self, doc2: Doc) Doc:
     if self is Doc._Empty:
@@ -180,6 +234,7 @@ Doc.cat(self, doc2: Doc) Doc:
         return self
 
     Doc._Cat(req = self._req() + doc2._req(), doc1 = self, doc2)
+
 
 Doc.flow[Iterator[iter, Doc, exn]](iter: iter, sep: Doc) Doc / exn:
     let ret = match iter.next():
@@ -191,5 +246,17 @@ Doc.flow[Iterator[iter, Doc, exn]](iter: iter, sep: Doc) Doc / exn:
 
     ret
 
+
+Doc.aligned(doc: Doc) Doc:
+    doc.align()
+
+
+Doc.align(self) Doc:
+    match self:
+        Doc._Empty: Doc._Empty
+        other: Doc._Align(req = self._req(), doc = self)
+
+
 impl Add[Doc]:
-    __add(self: Doc, other: Doc) Doc: self.cat(other)
+    __add(self: Doc, other: Doc) Doc:
+        self.cat(other)
