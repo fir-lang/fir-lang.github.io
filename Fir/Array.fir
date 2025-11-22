@@ -27,11 +27,11 @@ Array.getOpt(self: Array[t], idx: U32) Option[t]:
         Option.None
 
 
-Array.fromIter[Iterator[iter, item, exn]](iter: iter) Array[item] / exn:
-    let size = match iter.size[iter, item, exn, exn]():
-        Option.Some(size): size
-        Option.None: panic("Array.fromIter iterator size unknown")
-
+## Create an array of length `size`, from the iterator `iter`.
+##
+## The iterator should yield at least `size` amount of times, to be able to
+## initialize the array elements.
+Array.fromIter[Iterator[iter, item, exn]](iter: iter, size: U32) Array[item] / exn:
     let array = Array.new(size)
 
     for i: U32 in range(u32(0), size):
@@ -44,6 +44,14 @@ Array.iter(self: Array[t]) ArrayIter[t]:
     ArrayIter(_array = self, _idx = 0,)
 
 
+impl[Clone[t]] Clone[Array[t]]:
+    clone(self: Array[t]) Array[t]:
+        let new = Array.new(self.len())
+        for i: U32 in range(u32(0), self.len()):
+            new.set(i, self.get(i))
+        new
+
+
 impl[ToStr[t]] ToStr[Array[t]]:
     toStr(self: Array[t]) Str:
         let buf = StrBuf.withCapacity(self.len() * 5 + 2)
@@ -54,6 +62,24 @@ impl[ToStr[t]] ToStr[Array[t]]:
             buf.pushStr(self.get(i).toStr())
         buf.push(']')
         buf.toStr()
+
+
+impl[ToDoc[t]] ToDoc[Array[t]]:
+    toDoc(self: Array[t]) Doc:
+        if self.len() == 0:
+            return Doc.str("Array.[]")
+
+        let args = Doc.empty()
+        for i: U32 in range(u32(0), self.len()):
+            if i != 0:
+                args += Doc.char(',') + Doc.break_(1)
+            args += self.get(i).toDoc()
+        Doc.grouped(
+            Doc.str("Array.[")
+                + Doc.nested(4, Doc.break_(0) + args).group()
+                + Doc.break_(0)
+                + Doc.char(']'),
+        )
 
 
 type ArrayIter[t](

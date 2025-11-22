@@ -38,6 +38,20 @@ Str.startsWith(self, prefix: Str) Bool:
     Bool.True
 
 
+Str.endsWith(self, suffix: Str) Bool:
+    let suffixLen = suffix.len()
+    let selfLen = self.len()
+
+    if selfLen < suffixLen:
+        return Bool.False
+
+    for i in range(u32(0), suffixLen):
+        if self._bytes.get(selfLen - suffixLen + i) != suffix._bytes.get(i):
+            return Bool.False
+
+    Bool.True
+
+
 # Get the character at given byte index. Panics if the byte is not a first byte of a UTF-8
 # code point.
 Str.charAt(self, byteIndex: U32) Char:
@@ -130,6 +144,16 @@ impl Hash[Str]:
 
 impl ToStr[Str]:
     toStr(self: Str) Str:
+        self
+
+
+impl ToDoc[Str]:
+    toDoc(self: Str) Doc:
+        Doc.str("\"`self.toStr()`\"")
+
+
+impl Clone[Str]:
+    clone(self: Str) Str:
         self
 
 

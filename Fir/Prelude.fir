@@ -1,15 +1,18 @@
-import Fir.Array
-import Fir.Char
-import Fir.Exn
-import Fir.HashMap
-import Fir.Iter
-import Fir.Num
-import Fir.Option
-import Fir.PPrint
-import Fir.Result
-import Fir.Str
-import Fir.StrBuf
-import Fir.Vec
+import [
+    Fir/Array,
+    Fir/Char,
+    Fir/Exn,
+    Fir/HashMap,
+    Fir/HashSet,
+    Fir/Iter,
+    Fir/Num,
+    Fir/Option,
+    Fir/PPrint,
+    Fir/Result,
+    Fir/Str,
+    Fir/StrBuf,
+    Fir/Vec,
+]
 
 
 # A marker trait used to mark a type parameter as a record row.
@@ -106,6 +109,20 @@ trait Ord[t]:
             _: Bool.False
 
 
+max[Ord[t]](a: t, b: t) t:
+    if a > b:
+        a
+    else:
+        b
+
+
+min[Ord[t]](a: t, b: t) t:
+    if a < b:
+        a
+    else:
+        b
+
+
 trait ToStr[t]:
     toStr(self: t) Str
 
@@ -113,6 +130,15 @@ trait ToStr[t]:
 impl ToStr[()]:
     toStr(self: ()) Str:
         "()"
+
+
+trait ToDoc[t]:
+    toDoc(self: t) Doc
+
+
+impl ToDoc[Doc]:
+    toDoc(self: Doc) Doc:
+        self
 
 
 prim printStrNoNl(s: Str)
@@ -159,6 +185,13 @@ Bool.__not(self) Bool:
         Bool.False: Bool.True
 
 
+impl Eq[Bool]:
+    __eq(self: Bool, other: Bool) Bool:
+        match self:
+            Bool.True: other
+            Bool.False: not other
+
+
 impl ToStr[Bool]:
     toStr(self: Bool) Str:
         match self:
@@ -166,7 +199,16 @@ impl ToStr[Bool]:
             Bool.False: "Bool.False"
 
 
+impl ToDoc[Bool]:
+    toDoc(self: Bool) Doc:
+        Doc.str(self.toStr())
+
+
 prim readFileUtf8(path: Str) Str
+
+
+## Get command line arguments passed to the program.
+prim getArgs() Array[Str]
 
 
 trait Hash[t]:

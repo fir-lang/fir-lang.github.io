@@ -86,6 +86,21 @@ function getDataViewMemory0() {
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
+/**
+ * @returns {string}
+ */
+export function version() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.version();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+}
 
 export function setupPanicHook() {
     wasm.setupPanicHook();
@@ -116,22 +131,6 @@ export function run(pgm, args) {
     const ptr1 = passArrayJsValueToWasm0(args, wasm.__wbindgen_malloc);
     const len1 = WASM_VECTOR_LEN;
     wasm.run(ptr0, len0, ptr1, len1);
-}
-
-/**
- * @returns {string}
- */
-export function version() {
-    let deferred1_0;
-    let deferred1_1;
-    try {
-        const ret = wasm.version();
-        deferred1_0 = ret[0];
-        deferred1_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-    }
 }
 
 async function __wbg_load(module, imports) {

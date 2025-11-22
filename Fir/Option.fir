@@ -1,6 +1,18 @@
+#[derive(ToDoc)]
 type Option[t]:
     None
     Some(t)
+
+
+impl[ToDoc[t]] ToDoc[Option[t]]:
+    toDoc(self: Option[t]) Doc:
+        match self:
+            Option.None: Doc.str("Option.None")
+            Option.Some(i0):
+                let args = Doc.break_(0)
+                args += i0.toDoc()
+                args = args.nest(4).group() + Doc.break_(0) + Doc.char(')')
+                Doc.grouped(Doc.str("Option.Some") + Doc.char('(') + args)
 
 
 impl[ToStr[t]] ToStr[Option[t]]:
@@ -61,14 +73,6 @@ Option.guard(self: Option[t], guard: Fn(t) Bool / exn) Option[t] / exn:
     if self is Option.Some(val) and guard(val):
         return Option.Some(val)
     Option.None
-
-
-Option.isSome(self: Option[t]) Bool:
-    self is Option.Some(_)
-
-
-Option.isNone(self: Option[t]) Bool:
-    self is Option.None
 
 
 Option.flatten(self: Option[Option[t]]) Option[t]:
