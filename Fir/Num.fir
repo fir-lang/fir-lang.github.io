@@ -1,10 +1,59 @@
 prim type I64
 
 
+I64.min() I64:
+    -9223372036854775808
+
+
+I64.max() I64:
+    9223372036854775807
+
+
+impl ToStr[I64]:
+    prim toStr(self: I64) Str
+
+
 prim type U64
 
 
+U64.min() U64:
+    0
+
+
+U64.max() U64:
+    18446744073709551615
+
+
+impl Add[U64]:
+    prim __add(self: U64, other: U64) U64
+
+
+impl Mul[U64]:
+    prim __mul(self: U64, other: U64) U64
+
+
+impl Ord[U64]:
+    prim cmp(self: U64, other: U64) Ordering
+
+
+impl ToStr[U64]:
+    prim toStr(self: U64) Str
+
+
+impl Step[U64]:
+    step(self: U64) U64:
+        self + 1
+
+
 prim type I32
+
+
+I32.min() I32:
+    -2147483648
+
+
+I32.max() I32:
+    2147483647
 
 
 impl Add[I32]:
@@ -51,6 +100,10 @@ impl Neg[I32]:
     prim __neg(self: I32) I32
 
 
+impl Rem[I32]:
+    prim rem(self: I32, divisor: I32) I32
+
+
 impl ToStr[I32]:
     prim toStr(self: I32) Str
 
@@ -66,6 +119,10 @@ impl Step[I32]:
 
 
 prim type U32
+
+
+U32.min() U32:
+    0
 
 
 U32.max() U32:
@@ -121,6 +178,10 @@ impl Shr[U32]:
     prim __shr(self: U32, shift: U32) U32
 
 
+impl Rem[U32]:
+    prim rem(self: U32, divisor: U32) U32
+
+
 impl ToStr[U32]:
     prim toStr(self: U32) Str
 
@@ -145,6 +206,14 @@ prim U32.mod(self: U32, rhs: U32) U32
 
 
 prim type I8
+
+
+I8.min() I8:
+    -128
+
+
+I8.max() I8:
+    127
 
 
 impl Add[I8]:
@@ -191,6 +260,10 @@ impl Neg[I8]:
     prim __neg(self: I8) I8
 
 
+impl Rem[I8]:
+    prim rem(self: I8, divisor: I8) I8
+
+
 impl ToStr[I8]:
     prim toStr(self: I8) Str
 
@@ -206,6 +279,14 @@ impl Step[I8]:
 
 
 prim type U8
+
+
+U8.min() U8:
+    0
+
+
+U8.max() U8:
+    255
 
 
 U8.isAsciiWhitespace(self) Bool:
@@ -261,6 +342,10 @@ impl Shr[U8]:
     prim __shr(self: U8, shift: U8) U8
 
 
+impl Rem[U8]:
+    prim rem(self: U8, divisor: U8) U8
+
+
 impl ToStr[U8]:
     prim toStr(self: U8) Str
 
@@ -277,6 +362,7 @@ impl Step[U8]:
 
 # ------------------------------------------------------------------------------
 # Conversions
+
 
 prim U8.asI8(self: U8) I8
 
@@ -308,6 +394,9 @@ prim U32.asU8(self: U32) U8
 prim U32.asI32(self: U32) I32
 
 
+prim U32.asU64(self: U32) U64
+
+
 prim I32.asI8(self: I32) I8
 
 
@@ -323,6 +412,7 @@ prim I32.abs(self: I32) I32
 # ------------------------------------------------------------------------------
 # Functions to help with type inference
 
+
 i8(i: I8) I8:
     i
 
@@ -336,4 +426,12 @@ i32(i: I32) I32:
 
 
 u32(i: U32) U32:
+    i
+
+
+i64(i: I64) I64:
+    i
+
+
+u64(i: U64) U64:
     i
