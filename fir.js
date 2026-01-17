@@ -86,11 +86,6 @@ function getDataViewMemory0() {
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
-
-export function setupPanicHook() {
-    wasm.setupPanicHook();
-}
-
 /**
  * @returns {string}
  */
@@ -105,6 +100,10 @@ export function version() {
     } finally {
         wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
     }
+}
+
+export function setupPanicHook() {
+    wasm.setupPanicHook();
 }
 
 function addToExternrefTable0(obj) {
