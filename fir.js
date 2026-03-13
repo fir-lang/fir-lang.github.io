@@ -102,10 +102,6 @@ export function version() {
     }
 }
 
-export function setupPanicHook() {
-    wasm.setupPanicHook();
-}
-
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
     wasm.__wbindgen_export_2.set(idx, obj);
@@ -131,6 +127,10 @@ export function run(pgm, args) {
     const ptr1 = passArrayJsValueToWasm0(args, wasm.__wbindgen_malloc);
     const len1 = WASM_VECTOR_LEN;
     wasm.run(ptr0, len0, ptr1, len1);
+}
+
+export function setupPanicHook() {
+    wasm.setupPanicHook();
 }
 
 async function __wbg_load(module, imports) {
