@@ -58,6 +58,7 @@
       padding: 1em;
       box-sizing: border-box;
       height: 100%;
+      overflow: hidden;
     }
 
     textarea {
@@ -68,6 +69,11 @@
       padding: 1em;
       resize: none;
       box-sizing: border-box;
+    }
+
+    .CodeMirror {
+      flex: 1;
+      min-height: 0;
     }
 
     #run-button {
@@ -83,7 +89,8 @@
       flex-direction: column;
       gap: 1em;
       margin-top: 1em;
-      flex: 1;
+      max-height: 50%;
+      overflow-y: auto;
     }
 
     .output-box {
@@ -266,7 +273,7 @@ editor.setOption("extraKeys", {
   }
 });
 
-editor.setSize(null, 800);
+editor.setSize(null, "100%");
 
 function clearProgramOutput() {
   programOutput.textContent = '';
