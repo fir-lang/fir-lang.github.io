@@ -229,33 +229,76 @@
 
 <script src="lib/codemirror.min.js"></script>
 <script src="addon/edit/matchbrackets.js"></script>
-<script src="addon/mode/simple.js"></script>
 
 <script>
-CodeMirror.defineSimpleMode("simplemode", {
-  // The start state contains the rules that are initially used
-  start: [
-    {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
+CodeMirror.defineMode("fir", function() {
+  var keywords = /^(?:and|as|break|continue|do|elif|else|export|fn|Fn|for|if|impl|import|in|is|jump|let|loop|match|not|or|prim|return|trait|type|var|while)\b/;
 
-    {regex: /(?:and|as|break|continue|do|elif|else|export|fn|Fn|for|if|impl|import|in|is|jump|let|loop|match|not|or|prim|return|trait|type|var|while)\b/,
-     token: "keyword"},
+  return {
+    startState: function() {
+      return { commentDepth: 0 };
+    },
 
-    {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
-     token: "number"},
+    copyState: function(state) {
+      return { commentDepth: state.commentDepth };
+    },
 
-    {regex: /[a-z][a-zA-Z0-9_]*/,
-     token: "variable"},
+    token: function(stream, state) {
+      // Inside a block comment
+      if (state.commentDepth > 0) {
+        while (!stream.eol()) {
+          if (stream.match("#|")) {
+            state.commentDepth++;
+          } else if (stream.match("|#")) {
+            state.commentDepth--;
+            if (state.commentDepth === 0) return "comment";
+          } else {
+            stream.next();
+          }
+        }
+        return "comment";
+      }
 
-    {regex: /[A-Z][a-zA-Z0-9_]*/,
-     token: "type"},
+      // Block comment start
+      if (stream.match("#|")) {
+        state.commentDepth = 1;
+        while (!stream.eol()) {
+          if (stream.match("#|")) {
+            state.commentDepth++;
+          } else if (stream.match("|#")) {
+            state.commentDepth--;
+            if (state.commentDepth === 0) return "comment";
+          } else {
+            stream.next();
+          }
+        }
+        return "comment";
+      }
 
-    {regex: /#.*/, token: "comment"},
-  ],
+      // Line comment
+      if (stream.match(/#.*/)) return "comment";
 
-  meta: {
-    dontIndentStates: ["comment"],
+      // Strings
+      if (stream.match(/"(?:[^\\]|\\.)*?(?:"|$)/)) return "string";
+
+      // Keywords
+      if (stream.match(keywords)) return "keyword";
+
+      // Numbers
+      if (stream.match(/^0x[a-f\d]+/i) || stream.match(/^[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i)) return "number";
+
+      // Types (uppercase start)
+      if (stream.match(/^[A-Z][a-zA-Z0-9_]*/)) return "type";
+
+      // Variables (lowercase start)
+      if (stream.match(/^[a-z][a-zA-Z0-9_]*/)) return "variable";
+
+      stream.next();
+      return null;
+    },
+
     lineComment: "#"
-  }
+  };
 });
 
 var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -263,7 +306,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   lineWrapping: true,
   matchBrackets: true,
   indentUnit: 4,
-  mode: "simplemode",
+  mode: "fir",
 });
 
 editor.setOption("extraKeys", {
