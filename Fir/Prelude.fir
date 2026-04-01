@@ -6,26 +6,16 @@ import [
     Fir/HashMap,
     Fir/HashSet,
     Fir/Iter,
+    Fir/List,
     Fir/Num,
     Fir/Option,
     Fir/PPrint,
     Fir/Result,
+    Fir/RowToList,
     Fir/Str,
     Fir/StrBuf,
     Fir/Vec,
 ]
-
-
-# A marker trait used to mark a type parameter as a record row.
-#
-# This is temporary until we implement kind inference. (#46)
-trait RecRow[t]
-
-
-# A marker trait used to mark a type parameter as a variant row.
-#
-# This is temporary until we implement kind inference. (#46)
-trait VarRow[t]
 
 
 ## The `+` operator.
@@ -138,16 +128,6 @@ trait ToStr[t]:
     toStr(self: t) Str
 
 
-impl ToStr[()]:
-    toStr(self: ()) Str:
-        "()"
-
-
-impl ToDoc[()]:
-    toDoc(self: ()) Doc:
-        Doc.str("()")
-
-
 impl ToStr[[]]:
     toStr(self: []) Str:
         "unreachable"
@@ -155,6 +135,14 @@ impl ToStr[[]]:
 
 impl ToDoc[[]]:
     toDoc(self: []) Doc:
+        panic("unreachable")
+
+
+impl Eq[[]]:
+    __eq(self: [], other: []) Bool:
+        panic("unreachable")
+
+    __neq(self: [], other: []) Bool:
         panic("unreachable")
 
 
