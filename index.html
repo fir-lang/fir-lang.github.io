@@ -346,6 +346,9 @@ function addInterpreterOutput(output) {
 
 // This functions is used by the interpreted programs and the interpreter.
 function readFileUtf8(path) {
+  if (path === "Main.fir") {
+    return editor.getValue();
+  }
   const request = new XMLHttpRequest();
   request.open("GET", path, false);
   request.send(null);
