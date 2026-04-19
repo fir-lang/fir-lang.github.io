@@ -86,21 +86,6 @@ function getDataViewMemory0() {
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
-/**
- * @returns {string}
- */
-export function version() {
-    let deferred1_0;
-    let deferred1_1;
-    try {
-        const ret = wasm.version();
-        deferred1_0 = ret[0];
-        deferred1_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-    }
-}
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
@@ -131,6 +116,22 @@ export function run(pgm, args) {
 
 export function setupPanicHook() {
     wasm.setupPanicHook();
+}
+
+/**
+ * @returns {string}
+ */
+export function version() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.version();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
 }
 
 async function __wbg_load(module, imports) {

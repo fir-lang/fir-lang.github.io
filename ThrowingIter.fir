@@ -168,5 +168,5 @@ checkedMul(i1: U32, i2: U32) Option[U32]:
 # 10
 
 # expected stderr:
-# tests/ThrowingIter.fir:65:5: Unexhaustive pattern match
-# tests/ThrowingIter.fir:71:5: Unexhaustive pattern match
+# Tests/ThrowingIter.fir:65:5: Unexhaustive pattern match
+# Tests/ThrowingIter.fir:71:5: Unexhaustive pattern match
